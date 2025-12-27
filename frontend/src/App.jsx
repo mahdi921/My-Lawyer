@@ -7,9 +7,12 @@ import CasesList from './pages/CasesList';
 import NewCase from './pages/NewCase';
 import CaseResult from './pages/CaseResult';
 import EditCase from './pages/EditCase';
+import AnalysisDetail from './pages/AnalysisDetail';
+import ProfileSettings from './pages/ProfileSettings';
 import LandingPage from './pages/LandingPage';
 import Layout from './components/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
+import AuthRedirect from './components/AuthRedirect';
 
 const queryClient = new QueryClient();
 
@@ -18,10 +21,10 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <Router>
         <Routes>
-          {/* Public Routes */}
+          {/* Public Routes - Redirect to dashboard if logged in */}
           <Route path="/" element={<LandingPage />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
+          <Route path="/login" element={<AuthRedirect><Login /></AuthRedirect>} />
+          <Route path="/register" element={<AuthRedirect><Register /></AuthRedirect>} />
 
           {/* Protected Routes */}
           <Route element={<ProtectedRoute />}>
@@ -31,10 +34,13 @@ function App() {
               <Route path="cases/new" element={<NewCase />} />
               <Route path="cases/:id" element={<CaseResult />} />
               <Route path="cases/:id/edit" element={<EditCase />} />
+              <Route path="cases/:id/analysis/:analysisId" element={<AnalysisDetail />} />
 
-              {/* Placeholders for new sidebar links */}
+              {/* Settings */}
+              <Route path="settings" element={<ProfileSettings />} />
+
+              {/* Analysis list placeholder */}
               <Route path="analysis" element={<div className="text-center mt-20 text-gray-500">بخش تحلیل‌ها به زودی اضافه خواهد شد.</div>} />
-              <Route path="settings" element={<div className="text-center mt-20 text-gray-500">تنظیمات حساب کاربری به زودی اضافه خواهد شد.</div>} />
             </Route>
           </Route>
 

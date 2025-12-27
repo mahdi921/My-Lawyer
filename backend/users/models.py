@@ -31,10 +31,20 @@ class User(AbstractUser):
         ]
     )
     
+    # Profile fields (V2)
+    display_name = models.CharField(_('Display Name'), max_length=100, blank=True)
+    avatar = models.ImageField(_('Avatar'), upload_to='avatars/', null=True, blank=True)
+    notification_preferences = models.JSONField(
+        _('Notification Preferences'),
+        default=dict,
+        blank=True,
+        help_text='{"email": true, "telegram": false}'
+    )
+    
     USERNAME_FIELD = 'phone_number'
     REQUIRED_FIELDS = []
     
     objects = CustomUserManager()
 
     def __str__(self):
-        return self.phone_number
+        return self.display_name or self.phone_number
