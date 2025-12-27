@@ -10,5 +10,7 @@
 
 body {
   font-family: 'Vazirmatn', sans-serif;
-  @apply bg-gray-50 text-gray-900;
+  @apply bg-slate-50 text-slate-800;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }

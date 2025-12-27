@@ -29,6 +29,7 @@ INSTALLED_APPS = [
     'users',
     'cases',
     'analysis',
+    'audit_log',
 ]
 
 MIDDLEWARE = [
@@ -40,6 +41,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'virtual_lawyer.middleware.AuthRedirectMiddleware',
 ]
 
 ROOT_URLCONF = 'virtual_lawyer.urls'

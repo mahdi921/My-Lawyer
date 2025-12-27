@@ -2,203 +2,124 @@ import json
 import os
 import logging
 import uuid
+import time
 from datetime import datetime
 from django.conf import settings
+from .models import Case, AnalysisResult
 
 logger = logging.getLogger(__name__)
 
-
 class MockAnalysisService:
-    """Provides lawyer-grade mock analysis with detailed steps."""
+    """Provides lawyer-grade mock analysis with detailed steps (Strict V3 Schema)."""
     
     @staticmethod
     def analyze(case_text, category):
         """
-        Returns V2 lawyer-grade analysis structure.
+        Returns V3 lawyer-grade analysis structure.
         """
-        analysis_id = f"a_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+        analysis_id = f"an_{uuid.uuid4().hex[:8]}"
+        title = "پرونده حقوقی" # Default
         
-        paths = [
-            {
-                "id": "path_1",
-                "title": "مسالحه و توافق (Negotiation)",
-                "summary": "تلاش برای حل اختلاف از طریق مذاکره مستقیم یا شورای حل اختلاف",
-                "overall_probability": 70,
-                "total_estimated_time_days": 45,
-                "total_estimated_cost_range": [500000, 2000000],
-                "rationale": "با توجه به ماهیت پرونده، مذاکره مستقیم می‌تواند سریع‌ترین و کم‌هزینه‌ترین راه‌حل باشد.",
-                "primary_risks": ["عدم همکاری طرف مقابل", "نیاز به امتیازدهی"],
-                "steps": [
-                    {
-                        "id": "p1s1",
-                        "title": "ارسال اظهارنامه رسمی",
-                        "description": "تهیه و ارسال اظهارنامه رسمی به طرف مقابل طبق ماده ۱۵۶ قانون آیین دادرسی مدنی. اظهارنامه باید حاوی شرح دقیق ادعا، مبلغ مورد مطالبه و مهلت پاسخگویی باشد.",
-                        "required_documents": ["قرارداد اصلی.pdf", "مدارک هویتی.jpg", "مستندات مالی.xlsx"],
-                        "estimated_time_days": 7,
-                        "estimated_cost": 150000,
-                        "legal_basis": ["قانون آیین دادرسی مدنی، ماده ۱۵۶", "mock_reference"],
-                        "success_probability": 80,
-                        "risks": ["طرف مقابل اظهارنامه را نادیده بگیرد"],
-                        "actor": "user",
-                        "next_actions": ["انتظار پاسخ تا ۱۰ روز", "آماده‌سازی مدارک برای مرحله بعد"],
-                        "links": []
-                    },
-                    {
-                        "id": "p1s2",
-                        "title": "دعوت به جلسه مذاکره",
-                        "description": "در صورت پاسخ مثبت یا سکوت طرف مقابل، ارسال دعوت‌نامه رسمی برای جلسه مذاکره حضوری یا آنلاین.",
-                        "required_documents": ["نامه دعوت.docx"],
-                        "estimated_time_days": 14,
-                        "estimated_cost": 100000,
-                        "legal_basis": ["mock_reference"],
-                        "success_probability": 65,
-                        "risks": ["عدم حضور طرف مقابل", "اختلاف زیاد در مواضع"],
-                        "actor": "user",
-                        "next_actions": ["برگزاری جلسه", "تنظیم صورت‌جلسه"],
-                        "links": []
-                    },
-                    {
-                        "id": "p1s3",
-                        "title": "تنظیم صورت‌جلسه توافق",
-                        "description": "در صورت توافق، تنظیم صورت‌جلسه رسمی با امضای طرفین و شاهدین. این سند می‌تواند در صورت نقض، مبنای طرح دعوی قرار گیرد.",
-                        "required_documents": ["صورت‌جلسه توافق.pdf"],
-                        "estimated_time_days": 7,
-                        "estimated_cost": 250000,
-                        "legal_basis": ["قانون مدنی، ماده ۱۰", "mock_reference"],
-                        "success_probability": 90,
-                        "risks": ["عدم اجرای تعهدات توافق‌شده"],
-                        "actor": "lawyer",
-                        "next_actions": ["پیگیری اجرای تعهدات", "آرشیو مدارک"],
-                        "links": []
-                    }
-                ]
-            },
-            {
-                "id": "path_2",
-                "title": "طرح دعوی حقوقی (Litigation)",
-                "summary": "ثبت دادخواست در دادگاه حقوقی و پیگیری قضایی رسمی",
-                "overall_probability": 55,
-                "total_estimated_time_days": 270,
-                "total_estimated_cost_range": [5000000, 20000000],
-                "rationale": "در صورت عدم موفقیت مذاکره، طرح دعوی حقوقی می‌تواند حقوق شما را از طریق قانونی استیفا کند.",
-                "primary_risks": ["طولانی بودن روند دادرسی", "هزینه‌های بالا", "عدم قطعیت نتیجه"],
-                "steps": [
-                    {
-                        "id": "p2s1",
-                        "title": "تنظیم دادخواست",
-                        "description": "تهیه دادخواست با رعایت تشریفات قانونی طبق ماده ۵۱ قانون آیین دادرسی مدنی. دادخواست باید شامل خواسته، دلایل و مستندات باشد.",
-                        "required_documents": ["دادخواست.pdf", "قرارداد.pdf", "مستندات مالی.xlsx", "شناسنامه.jpg"],
-                        "estimated_time_days": 10,
-                        "estimated_cost": 500000,
-                        "legal_basis": ["قانون آیین دادرسی مدنی، مواد ۵۱ تا ۵۳", "mock_reference"],
-                        "success_probability": 70,
-                        "risks": ["رد دادخواست به دلیل نقص شکلی"],
-                        "actor": "lawyer",
-                        "next_actions": ["ثبت در دفاتر خدمات قضایی"],
-                        "links": []
-                    },
-                    {
-                        "id": "p2s2",
-                        "title": "ثبت در دفاتر خدمات قضایی",
-                        "description": "مراجعه به دفاتر خدمات الکترونیک قضایی و ثبت دادخواست. پرداخت هزینه دادرسی بر اساس تعرفه‌های مصوب.",
-                        "required_documents": [],
-                        "estimated_time_days": 3,
-                        "estimated_cost": 1500000,
-                        "legal_basis": ["قانون وصول برخی از درآمدهای دولت", "mock_reference"],
-                        "success_probability": 95,
-                        "risks": [],
-                        "actor": "user",
-                        "next_actions": ["دریافت شماره پرونده", "انتظار تعیین وقت"],
-                        "links": []
-                    },
-                    {
-                        "id": "p2s3",
-                        "title": "جلسه اول دادرسی",
-                        "description": "حضور در جلسه دادرسی و ارائه لوایح و مستندات. پاسخ به ایرادات احتمالی خوانده.",
-                        "required_documents": ["لایحه دفاعیه.pdf"],
-                        "estimated_time_days": 60,
-                        "estimated_cost": 1000000,
-                        "legal_basis": ["mock_reference"],
-                        "success_probability": 60,
-                        "risks": ["ایراد خوانده به صلاحیت دادگاه", "ارجاع به کارشناسی"],
-                        "actor": "lawyer",
-                        "next_actions": ["پیگیری جلسات بعدی"],
-                        "links": []
-                    },
-                    {
-                        "id": "p2s4",
-                        "title": "مرحله کارشناسی",
-                        "description": "در صورت ارجاع به کارشناس، همکاری با کارشناس رسمی دادگستری و ارائه مدارک لازم.",
-                        "required_documents": ["مدارک فنی مورد نیاز کارشناس"],
-                        "estimated_time_days": 45,
-                        "estimated_cost": 3000000,
-                        "legal_basis": ["قانون آیین دادرسی مدنی، مواد ۲۵۷ تا ۲۶۹", "mock_reference"],
-                        "success_probability": 50,
-                        "risks": ["نظر کارشناس به نفع طرف مقابل باشد"],
-                        "actor": "third_party",
-                        "next_actions": ["بررسی نظر کارشناس", "اعتراض در صورت نیاز"],
-                        "links": []
-                    },
-                    {
-                        "id": "p2s5",
-                        "title": "صدور رأی بدوی",
-                        "description": "صدور رأی توسط قاضی بر اساس مستندات و نظر کارشناسی. امکان تجدیدنظرخواهی ظرف ۲۰ روز.",
-                        "required_documents": [],
-                        "estimated_time_days": 30,
-                        "estimated_cost": 0,
-                        "legal_basis": ["قانون آیین دادرسی مدنی، ماده ۳۳۶", "mock_reference"],
-                        "success_probability": 55,
-                        "risks": ["رأی نامطلوب", "تجدیدنظرخواهی طرف مقابل"],
-                        "actor": "court",
-                        "next_actions": ["دریافت رأی", "بررسی امکان تجدیدنظر"],
-                        "links": []
-                    }
-                ]
-            }
-        ]
-        
-        # Add criminal path for criminal cases
-        if category == 'criminal':
-            paths.append({
-                "id": "path_3",
-                "title": "شکایت کیفری",
-                "summary": "پیگیری موضوع از طریق دادسرا و مراجع کیفری",
-                "overall_probability": 60,
-                "total_estimated_time_days": 180,
-                "total_estimated_cost_range": [2000000, 10000000],
-                "rationale": "در صورت وجود وصف مجرمانه (مثل کلاهبرداری یا خیانت در امانت)، شکایت کیفری می‌تواند فشار بیشتری بر متهم وارد کند.",
-                "primary_risks": ["عدم احراز وصف مجرمانه", "صدور قرار منع تعقیب"],
-                "steps": [
-                    {
-                        "id": "p3s1",
-                        "title": "تنظیم شکواییه",
-                        "description": "تهیه شکواییه با ذکر دقیق عنوان مجرمانه، شرح واقعه و ادله اثباتی.",
-                        "required_documents": ["شکواییه.pdf", "مستندات جرم.pdf"],
-                        "estimated_time_days": 7,
-                        "estimated_cost": 300000,
-                        "legal_basis": ["قانون آیین دادرسی کیفری، ماده ۶۴", "mock_reference"],
-                        "success_probability": 70,
-                        "risks": ["رد شکایت"],
-                        "actor": "lawyer",
-                        "next_actions": ["ثبت در دادسرا"],
-                        "links": []
-                    }
-                ]
-            })
-            
+        # Lawyer-Grade "Mock" Analysis JSON
         return {
             "analysis_id": analysis_id,
             "source": "experimental-mock",
+            "version": "v1",
             "generated_at": datetime.now().isoformat(),
-            "summary": "با توجه به مستندات ارائه شده، پرونده شما قابلیت پیگیری از چند مسیر قانونی را دارد. توجه: این تحلیل آزمایشی است و جایگزین مشاوره حقوقی رسمی نمی‌باشد.",
-            "disclaimer": "این راهنمایی مشاوره‌ای است و جایگزین مشاوره حقوقی رسمی نیست.",
-            "paths": paths,
-            "recommended_path": "path_1"
+            "options": [
+                {
+                    "option_id": "opt_negotiation",
+                    "title": "مذاکره و سازش",
+                    "summary": "پیشنهاد سازش با ارسال اظهارنامه رسمی و دعوت به مذاکره.",
+                    "detailed_steps": [
+                        {
+                            "step_number": 1,
+                            "title": "ارسال اظهارنامه رسمی",
+                            "description": "تهیه متن اظهارنامه شامل مطالبه وجه/حق و اخطار قانونی مبنی بر مراجعه به دادگاه.",
+                            "estimated_duration_days": 3,
+                            "required_documents": ["کارت ملی", "سند مدرک دعوی"],
+                            "legal_actions": ["send_legal_notice"],
+                            "assigned_role": "user",
+                            "risk_notes": "خطر: ممکن است طرف مقابل آدرس خود را تغییر دهد."
+                        },
+                        {
+                            "step_number": 2,
+                            "title": "جلسه مذاکره",
+                            "description": "برگزاری جلسه و تنظیم صلح‌نامه رسمی در دفترخانه.",
+                            "estimated_duration_days": 10,
+                            "required_documents": ["پیش‌نویس صلح‌نامه"],
+                            "legal_actions": ["draft_settlement"],
+                            "assigned_role": "lawyer",
+                            "risk_notes": "خطر: عدم پایبندی طرف به توافق شفاهی."
+                        }
+                    ],
+                    "estimated_success_probability": 70,
+                    "confidence_score": 0.85,
+                    "cost_estimate": {
+                        "amount": 2000000, 
+                        "currency": "IRR", 
+                        "explanation": "هزینه دفتر خدمات قضایی"
+                    },
+                    "key_assumptions": ["خوانده تمایل به سازش دارد"],
+                    "legal_references": [{"code": "CivilProc", "article": "156"}],
+                    "limitations_and_disclaimer": "نتیجه تضمین شده نیست."
+                },
+                {
+                    "option_id": "opt_litigation",
+                    "title": "طرح دعوی در دادگاه",
+                    "summary": "ثبت دادخواست و پیگیری قضایی تا صدور حکم.",
+                    "detailed_steps": [
+                        {
+                            "step_number": 1,
+                            "title": "ثبت دادخواست",
+                            "description": "ثبت دادخواست در دفاتر خدمات قضایی.",
+                            "estimated_duration_days": 7,
+                            "required_documents": ["دادخواست", "ادله"],
+                            "legal_actions": ["file_petition"],
+                            "assigned_role": "user",
+                            "risk_notes": "خطر: رد دادخواست به دلیل نقص."
+                        },
+                        {
+                            "step_number": 2,
+                            "title": "جلسه دادرسی",
+                            "description": "حضور در دادگاه و دفاع.",
+                            "estimated_duration_days": 90,
+                            "required_documents": ["لایحه"],
+                            "legal_actions": ["hearing"],
+                            "assigned_role": "lawyer",
+                            "risk_notes": "خطر: اطاله دادرسی."
+                        }
+                    ],
+                    "estimated_success_probability": 60,
+                    "confidence_score": 0.90,
+                    "cost_estimate": {
+                        "amount": 15000000, 
+                        "currency": "IRR", 
+                        "explanation": "۳.۵٪ هزینه دادرسی"
+                    },
+                    "key_assumptions": ["مدارک کامل است"],
+                    "legal_references": [{"code": "CivilProc", "article": "48"}],
+                    "limitations_and_disclaimer": "زمان‌بر بودن پروسه."
+                }
+            ],
+            "flowchart_json": {
+                "nodes": [
+                    { "id": "1", "type": "input", "data": { "label": "شروع" }, "position": { "x": 250, "y": 0 } },
+                    { "id": "2", "data": { "label": "ارسال اظهارنامه" }, "position": { "x": 100, "y": 100 } },
+                    { "id": "3", "data": { "label": "ثبت دادخواست" }, "position": { "x": 400, "y": 100 } }
+                ],
+                "edges": [
+                    { "id": "e1-2", "source": "1", "target": "2" },
+                    { "id": "e1-3", "source": "1", "target": "3" }
+                ]
+            },
+            "comparison_rationale": "مذاکره کم‌هزینه‌تر است، اما دادخواست نتیجه قطعی‌تری دارد.",
+            "provenance": [{"source": "mock_engine", "value": "rules_v1"}]
         }
 
 
 class AIAnalysisService:
-    """AI-powered analysis using OpenAI API with lawyer-grade prompts."""
+    """AI-powered analysis using OpenAI API with strict V3 schema."""
     
     @staticmethod
     def analyze(case_text, category):
@@ -212,55 +133,43 @@ class AIAnalysisService:
             client = OpenAI(api_key=api_key)
 
             system_prompt = """
-You are an expert Iranian lawyer (وکیل پایه یک دادگستری). Analyze the legal case and provide detailed, actionable advice.
-
-Your response MUST be valid JSON with this structure:
+You are an expert Iranian lawyer. Provide detailed, actionable advice.
+Response MUST be valid JSON:
 {
-  "analysis_id": "unique_id",
+  "analysis_id": "uuid",
+  "generated_at": "ISO",
   "source": "ai-engine",
-  "generated_at": "ISO timestamp",
-  "summary": "Professional summary in Persian",
-  "disclaimer": "این راهنمایی مشاوره‌ای است و جایگزین مشاوره حقوقی رسمی نیست.",
-  "recommended_path": "best path id",
-  "paths": [
+  "options": [
     {
-      "id": "path_1",
-      "title": "Path title in Persian",
-      "summary": "Brief summary",
-      "overall_probability": 0-100,
-      "total_estimated_time_days": number,
-      "total_estimated_cost_range": [min, max],
-      "rationale": "Why this path is recommended",
-      "primary_risks": ["risk1", "risk2"],
-      "steps": [
+      "option_id": "string",
+      "title": "Persian Title",
+      "summary": "Persian Summary",
+      "detailed_steps": [
         {
-          "id": "p1s1",
-          "title": "Step title",
-          "description": "Detailed description with specific instructions",
-          "required_documents": ["doc1.pdf", "doc2.jpg"],
-          "estimated_time_days": number,
-          "estimated_cost": number,
-          "legal_basis": ["قانون..., ماده..."],
-          "success_probability": 0-100,
-          "risks": ["specific risk"],
-          "actor": "user|lawyer|court|third_party",
-          "next_actions": ["next step"],
-          "links": []
+          "step_number": 1,
+          "title": "Step Title",
+          "description": "Detailed Instructions",
+          "estimated_duration_days": int,
+          "required_documents": ["doc1", "doc2"],
+          "legal_actions": ["action_code"],
+          "assigned_role": "user|lawyer",
+          "risk_notes": "Risk warning"
         }
-      ]
+      ],
+      "estimated_success_probability": int,
+      "confidence_score": float,
+      "cost_estimate": {"amount": int, "currency": "IRR", "explanation": "string"},
+      "key_assumptions": ["string"],
+      "legal_references": [{"code": "LawName", "article": "Number"}],
+      "limitations_and_disclaimer": "string"
     }
-  ]
+  ],
+  "flowchart_json": { "nodes": [], "edges": [] },
+  "comparison_rationale": "string"
 }
-
-Rules:
-1. ALL text must be in formal Persian
-2. Provide at least 2 distinct paths with 3+ steps each
-3. Include real Iranian legal references (قانون مدنی, قانون آیین دادرسی, etc.)
-4. Be specific about costs, timelines, and required documents
-5. Each step must have actionable instructions
 """.strip()
 
-            user_prompt = f"دسته‌بندی: {category}\nتوضیحات پرونده: {case_text}"
+            user_prompt = f"Category: {category}\nDetails: {case_text}"
 
             response = client.chat.completions.create(
                 model="gpt-4o-mini",

@@ -21,36 +21,57 @@ export default function Login() {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-100">
-            <div className="bg-white p-8 rounded-lg shadow-md w-96">
-                <h2 className="text-2xl font-bold text-center mb-6 text-slate-800">ورود به حساب</h2>
-                {error && <div className="text-red-500 text-sm mb-4 text-center">{error}</div>}
-                <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4">
+            <div className="bg-white p-8 rounded-3xl shadow-xl w-full max-w-sm border border-slate-100">
+                {/* Logo */}
+                <div className="flex justify-center mb-8">
+                    <div className="w-16 h-16 bg-emerald-600 rounded-2xl flex items-center justify-center shadow-lg shadow-emerald-600/20">
+                        <span className="text-3xl font-bold text-white">V</span>
+                    </div>
+                </div>
+
+                <h2 className="text-2xl font-bold text-center mb-2 text-slate-800">خوش آمدید</h2>
+                <p className="text-center text-slate-500 text-sm mb-8">برای دسترسی به داشبورد وارد شوید</p>
+
+                {error && (
+                    <div className="bg-red-50 text-red-600 text-sm p-3 rounded-xl mb-6 text-center border border-red-100">
+                        {error}
+                    </div>
+                )}
+
+                <form onSubmit={handleSubmit} className="space-y-5">
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">شماره موبایل</label>
+                        <label className="block text-sm font-medium text-slate-700 mb-2">شماره موبایل</label>
                         <input
                             type="text"
-                            className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-emerald-500 outline-none dir-ltr text-left"
+                            className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none dir-ltr text-left transition-all"
                             placeholder="0912..."
                             value={phone}
                             onChange={(e) => setPhone(e.target.value)}
                         />
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">رمز عبور</label>
+                        <label className="block text-sm font-medium text-slate-700 mb-2">رمز عبور</label>
                         <input
                             type="password"
-                            className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-emerald-500 outline-none dir-ltr text-left"
+                            className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none dir-ltr text-left transition-all"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                         />
                     </div>
-                    <button type="submit" className="w-full bg-emerald-600 text-white py-2 rounded hover:bg-emerald-700 transition">
-                        ورود
+                    <button
+                        type="submit"
+                        className="w-full bg-emerald-600 text-white py-3.5 rounded-xl hover:bg-emerald-700 transition font-bold shadow-lg shadow-emerald-600/20 active:scale-[0.98]"
+                    >
+                        ورود به حساب
                     </button>
                 </form>
-                <div className="mt-4 text-center text-sm">
-                    حساب ندارید؟ <Link to="/register" className="text-emerald-600">ثبت‌نام کنید</Link>
+
+                <div className="mt-8 text-center text-sm text-slate-500">
+                    حساب کاربری ندارید؟{' '}
+                    <Link to="/register" className="text-emerald-600 font-bold hover:underline">
+                        ثبت‌نام کنید
+                    </Link>
                 </div>
             </div>
         </div>

@@ -49,44 +49,66 @@ class CaseFile(models.Model):
         return f'{self.case.title} - {self.file.name}'
 
 
+# --- Legacy Support for Migrations ---
 def case_update_file_path(instance, filename):
-    return f'cases/{instance.update.case.id}/updates/{instance.update.id}/{filename}'
+    return f'cases/updates/legacy/{filename}'
+# -------------------------------------
 
 
-class CaseUpdate(models.Model):
+class CaseEvent(models.Model):
     """Represents a post-hearing update, new evidence, or event in a case."""
-    UPDATE_TYPE_CHOICES = [
-        ('DOCUMENT', _('Document')),
-        ('AUDIO', _('Audio Recording')),
-        ('EVENT_NOTE', _('Event Note')),
-        ('COURT_RULING', _('Court Ruling')),
+    EVENT_TYPES = [
+        ('court_verdict', _('Court Verdict')),
+        ('hearing_outcome', _('Hearing Outcome')),
+        ('evidence_submitted', _('Evidence Submitted')),
+        ('note', _('Note')),
+        ('settlement', _('Settlement')),
+        ('other', _('Other')),
     ]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    case = models.ForeignKey(Case, on_delete=models.CASCADE, related_name='updates')
-    author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    update_type = models.CharField(_('Update Type'), max_length=20, choices=UPDATE_TYPE_CHOICES)
-    title = models.CharField(_('Title'), max_length=255)
-    description = models.TextField(_('Description'), blank=True)
-    effective_date = models.DateField(_('Effective Date'), null=True, blank=True)
+    case = models.ForeignKey(Case, on_delete=models.CASCADE, related_name='events')
+    event_type = models.CharField(_('Event Type'), max_length=50, choices=EVENT_TYPES)
+    summary = models.CharField(_('Summary'), max_length=255)
+    details = models.TextField(_('Details'), blank=True)
+    timestamp = models.DateTimeField(_('Timestamp'), default=models.functions.Now)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='case_events')
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        verbose_name = _('Case Update')
-        verbose_name_plural = _('Case Updates')
-        ordering = ['-created_at']
+        verbose_name = _('Case Event')
+        verbose_name_plural = _('Case Events')
+        ordering = ['-timestamp']
 
     def __str__(self):
-        return f'{self.case.title} - {self.title}'
+        return f'{self.case.title} - {self.summary}'
 
 
-class CaseUpdateFile(models.Model):
-    """Files attached to a CaseUpdate."""
-    update = models.ForeignKey(CaseUpdate, on_delete=models.CASCADE, related_name='files')
-    file = models.FileField(_('File'), upload_to=case_update_file_path)
+def case_event_file_path(instance, filename):
+    return f'cases/{instance.event.case.id}/events/{instance.event.id}/{filename}'
+
+
+class CaseEventAttachment(models.Model):
+    """Attachments for a CaseEvent."""
+    event = models.ForeignKey(CaseEvent, on_delete=models.CASCADE, related_name='attachments')
+    file = models.FileField(_('File'), upload_to=case_event_file_path)
     file_type = models.CharField(max_length=50, blank=True)
     uploaded_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f'{self.update.title} - {self.file.name}'
+        return f'{self.event.summary} - {self.file.name}'
+
+
+class CaseDecision(models.Model):
+    """Tracks user decisions on analysis options."""
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    case = models.ForeignKey(Case, on_delete=models.CASCADE, related_name='decisions')
+    analysis_id = models.CharField(max_length=100) # Reference to the AnalysisResult.id (or custom ID)
+    option_id = models.CharField(max_length=100)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    selected_at = models.DateTimeField(auto_now_add=True)
+    notes = models.TextField(blank=True)
+
+    def __str__(self):
+        return f"Decision: {self.option_id} for Case {self.case.title}"
 

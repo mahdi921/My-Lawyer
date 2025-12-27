@@ -8,6 +8,7 @@ import NewCase from './pages/NewCase';
 import CaseResult from './pages/CaseResult';
 import EditCase from './pages/EditCase';
 import AnalysisDetail from './pages/AnalysisDetail';
+import AnalysisList from './pages/AnalysisList';
 import ProfileSettings from './pages/ProfileSettings';
 import LandingPage from './pages/LandingPage';
 import Layout from './components/Layout';
@@ -39,8 +40,8 @@ function App() {
               {/* Settings */}
               <Route path="settings" element={<ProfileSettings />} />
 
-              {/* Analysis list placeholder */}
-              <Route path="analysis" element={<div className="text-center mt-20 text-gray-500">بخش تحلیل‌ها به زودی اضافه خواهد شد.</div>} />
+              {/* Analysis */}
+              <Route path="analysis" element={<AnalysisList />} />
             </Route>
           </Route>
 

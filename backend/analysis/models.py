@@ -12,17 +12,23 @@ class AnalysisResult(models.Model):
         ('experimental-mock', _('Experimental Mock')),
     ]
 
-    # Keep default auto id for backwards compatibility
+    # Keep default auto id for backwards compatibility with existing records
     case = models.ForeignKey(Case, on_delete=models.CASCADE, related_name='analyses')
-    # JSON structure with paths and steps
+    
+    # JSON now strictly holds: options[], flowchart_json, provenance, comparison_rationale
     result_json = models.JSONField(_('Analysis Result JSON'))
+    
+    # Metadata extracted for indexing/querying
     summary_text = models.TextField(_('Summary Text'), blank=True)
     success_probability = models.IntegerField(_('Success Probability'), default=0)
     
-    # New V2 fields
+    # V3 provenance fields
+    derived_from_analysis = models.ForeignKey('self', null=True, blank=True, on_delete=models.SET_NULL, related_name='successors')
+    derived_from_event_id = models.CharField(max_length=100, null=True, blank=True) # ID of CaseEvent
+    
     version = models.PositiveIntegerField(_('Version'), default=1)
     source = models.CharField(_('Source'), max_length=20, choices=SOURCE_CHOICES, default='experimental-mock')
-    schema_version = models.CharField(_('Schema Version'), max_length=10, default='2.0')
+    schema_version = models.CharField(_('Schema Version'), max_length=10, default='3.0')
     is_mock = models.BooleanField(default=True)
     
     created_at = models.DateTimeField(auto_now_add=True)

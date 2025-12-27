@@ -27,6 +27,7 @@ urlpatterns = [
     
     # API
     path('api/', include(router.urls)),
+    path('api/', include('analysis.urls')),
     
     # Docs
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),

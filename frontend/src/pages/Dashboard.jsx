@@ -4,8 +4,6 @@ import { Link } from 'react-router-dom';
 import { Activity, Clock, CheckCircle } from 'lucide-react';
 
 export default function Dashboard() {
-    // Ideally user profile and summary stats would be fetched here
-    // For now we can fetch cases to generate stats
     const { data: cases, isLoading } = useQuery({
         queryKey: ['cases'],
         queryFn: async () => {
@@ -14,81 +12,117 @@ export default function Dashboard() {
         }
     });
 
-    if (isLoading) return <div>در حال بارگذاری اطلاعات داشبورد...</div>;
+    if (isLoading) return (
+        <div className="flex items-center justify-center min-h-[50vh]">
+            <div className="animate-spin rounded-full h-12 w-12 border-4 border-emerald-500 border-t-transparent"></div>
+        </div>
+    );
 
     const totalCases = cases?.length || 0;
     const processingCases = cases?.filter(c => c.status === 'processing').length || 0;
     const analyzedCases = cases?.filter(c => c.status === 'analyzed').length || 0;
 
     return (
-        <div>
-            <h2 className="text-2xl font-bold text-slate-800 mb-8">داشبورد وضعیت</h2>
+        <div className="max-w-5xl mx-auto">
+            <div className="flex items-center justify-between mb-8">
+                <div>
+                    <h2 className="text-2xl font-bold text-slate-800 tracking-tight">داشبورد وضعیت</h2>
+                    <p className="text-slate-500 mt-1">نمای کلی فعالیت‌های حقوقی شما</p>
+                </div>
+                <Link
+                    to="/cases/new"
+                    className="bg-emerald-600 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-emerald-700 transition shadow-lg shadow-emerald-600/20"
+                >
+                    پرونده جدید
+                </Link>
+            </div>
 
             {/* Stats Cards */}
             <div className="grid gap-6 md:grid-cols-3 mb-10">
-                <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between">
+                <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between hover:shadow-md transition-shadow">
                     <div>
-                        <p className="text-gray-500 mb-2">کل پرونده‌ها</p>
-                        <h3 className="text-3xl font-bold text-slate-800">{totalCases}</h3>
+                        <p className="text-slate-500 font-medium mb-1">کل پرونده‌ها</p>
+                        <h3 className="text-4xl font-bold text-slate-800">{totalCases}</h3>
                     </div>
-                    <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center text-blue-600">
-                        <Activity className="h-6 w-6" />
+                    <div className="w-14 h-14 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600">
+                        <Activity className="h-7 w-7" />
                     </div>
                 </div>
 
-                <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between">
+                <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between hover:shadow-md transition-shadow">
                     <div>
-                        <p className="text-gray-500 mb-2">در حال پردازش</p>
-                        <h3 className="text-3xl font-bold text-yellow-600">{processingCases}</h3>
+                        <p className="text-slate-500 font-medium mb-1">در حال پردازش</p>
+                        <h3 className="text-4xl font-bold text-amber-500">{processingCases}</h3>
                     </div>
-                    <div className="w-12 h-12 bg-yellow-100 rounded-xl flex items-center justify-center text-yellow-600">
-                        <Clock className="h-6 w-6" />
+                    <div className="w-14 h-14 bg-amber-50 rounded-2xl flex items-center justify-center text-amber-500">
+                        <Clock className="h-7 w-7" />
                     </div>
                 </div>
 
-                <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between">
+                <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between hover:shadow-md transition-shadow">
                     <div>
-                        <p className="text-gray-500 mb-2">تحلیل شده</p>
-                        <h3 className="text-3xl font-bold text-emerald-600">{analyzedCases}</h3>
+                        <p className="text-slate-500 font-medium mb-1">تحلیل شده</p>
+                        <h3 className="text-4xl font-bold text-emerald-600">{analyzedCases}</h3>
                     </div>
-                    <div className="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center text-emerald-600">
-                        <CheckCircle className="h-6 w-6" />
+                    <div className="w-14 h-14 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-600">
+                        <CheckCircle className="h-7 w-7" />
                     </div>
                 </div>
             </div>
 
-            {/* Quick Actions or Recent Cases */}
-            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+            {/* Recent Activity */}
+            <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
                 <div className="flex justify-between items-center mb-6">
-                    <h3 className="font-bold text-lg text-slate-800">فعالیت‌های اخیر</h3>
-                    <Link to="/cases" className="text-sm text-emerald-600 hover:underline">
-                        مشاهده همه پرونده‌ها
+                    <h3 className="font-bold text-lg text-slate-800 flex items-center gap-2">
+                        <span className="w-1 h-6 bg-emerald-500 rounded-full"></span>
+                        فعالیت‌های اخیر
+                    </h3>
+                    <Link to="/cases" className="text-sm font-medium text-emerald-600 hover:text-emerald-700 transition">
+                        مشاهده همه
                     </Link>
                 </div>
+
                 {totalCases === 0 ? (
-                    <div className="text-center py-10 text-gray-400">
-                        هنوز پرونده‌ای ثبت نکرده‌اید.
-                        <div className="mt-4">
-                            <Link to="/cases/new" className="text-emerald-600 font-medium hover:underline">
-                                ثبت اولین پرونده
-                            </Link>
-                        </div>
+                    <div className="text-center py-12 bg-slate-50 rounded-xl border-2 border-dashed border-slate-200">
+                        <p className="text-slate-400 mb-4">هنوز پرونده‌ای ثبت نکرده‌اید</p>
+                        <Link
+                            to="/cases/new"
+                            className="inline-flex items-center gap-2 text-emerald-600 font-bold hover:underline"
+                        >
+                            ثبت اولین پرونده
+                        </Link>
                     </div>
                 ) : (
-                    <ul className="space-y-4">
-                        {cases.slice(0, 3).map(c => (
-                            <li key={c.id} className="flex justify-between items-center p-3 hover:bg-gray-50 rounded-lg transition">
-                                <div>
-                                    <h4 className="font-medium text-slate-700">{c.title}</h4>
-                                    <p className="text-xs text-gray-500">{new Date(c.created_at).toLocaleDateString('fa-IR')}</p>
+                    <div className="space-y-3">
+                        {cases.slice(0, 5).map(c => (
+                            <Link
+                                key={c.id}
+                                to={`/cases/${c.id}`}
+                                className="flex justify-between items-center p-4 hover:bg-slate-50 rounded-xl transition border border-transparent hover:border-slate-100 group"
+                            >
+                                <div className="flex items-center gap-3">
+                                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-lg font-bold ${c.status === 'analyzed' ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-100 text-slate-500'
+                                        }`}>
+                                        {c.title.charAt(0)}
+                                    </div>
+                                    <div>
+                                        <h4 className="font-bold text-slate-700 group-hover:text-emerald-700 transition-colors">{c.title}</h4>
+                                        <div className="flex items-center gap-2 text-xs text-slate-400 mt-1">
+                                            <span>{new Date(c.created_at).toLocaleDateString('fa-IR')}</span>
+                                            <span>•</span>
+                                            <span>{c.get_category_display || c.category}</span>
+                                        </div>
+                                    </div>
                                 </div>
-                                <span className={`text-xs px-2 py-1 rounded-full ${c.status === 'analyzed' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
+                                <span className={`text-xs font-bold px-3 py-1.5 rounded-full ${c.status === 'analyzed'
+                                        ? 'bg-emerald-100 text-emerald-700'
+                                        : 'bg-amber-100 text-amber-700'
                                     }`}>
                                     {c.status === 'analyzed' ? 'تحلیل شده' : 'در جریان'}
                                 </span>
-                            </li>
+                            </Link>
                         ))}
-                    </ul>
+                    </div>
                 )}
             </div>
         </div>

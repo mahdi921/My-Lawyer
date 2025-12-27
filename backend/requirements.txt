@@ -13,3 +13,11 @@ dj-database-url>=2.1
 djangorestframework-simplejwt>=5.3
 
 openai>=1.0.0
+
+# Document Processing
+pdfplumber>=0.10.0
+python-magic>=0.4.27
+
+# Real-time (WebSocket/SSE)
+channels>=4.0.0
+channels-redis>=4.2.0

@@ -2,13 +2,14 @@ FROM python:3.13.9-alpine
 
 WORKDIR /app
 
-# Install system dependencies
+# Install dependencies for psycopg2, Pillow, and python-magic
 RUN apk add --no-cache \
     postgresql-dev \
     gcc \
-    python3-dev \
     musl-dev \
     jpeg-dev \
+    zlib-dev \
+    libmagic \
     zlib-dev \
     linux-headers
 
