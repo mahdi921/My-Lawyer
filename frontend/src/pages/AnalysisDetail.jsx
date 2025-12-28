@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import api from '../api';
 import { ArrowLeft, Clock, AlertTriangle, FileText, CheckCircle, ChevronDown, ChevronUp, Share2, Download, GitMerge, Info } from 'lucide-react';
@@ -34,6 +34,7 @@ const FlowchartView = ({ flowchartJson }) => {
 
 export default function AnalysisDetail() {
     const { id, analysisId } = useParams();
+    const navigate = useNavigate();
     const [expandedOption, setExpandedOption] = useState(null);
     const [expandedStep, setExpandedStep] = useState(null);
 
@@ -52,6 +53,18 @@ export default function AnalysisDetail() {
     const chooseOptionMutation = useMutation({
         mutationFn: (optionId) => api.post(`/cases/${id}/analyses/${analysisId}/choose`, { option_id: optionId }),
         onSuccess: () => alert('مسیر انتخاب شد (ثبت در سیستم).')
+    });
+
+    // Re-analyze mutation
+    const retryMutation = useMutation({
+        mutationFn: () => api.post(`/cases/${id}/analyses/${analysisId}/retry/`),
+        onSuccess: (data) => {
+            alert('تحلیل مجدد آغاز شد. لطفاً صبر کنید...');
+            navigate(`/cases/${id}`);
+        },
+        onError: (err) => {
+            alert(err.response?.data?.error || 'خطا در درخواست تحلیل مجدد');
+        }
     });
 
     if (isLoading) return <div className="p-8 text-center">درحال دریافت تحلیل دقیق...</div>;
@@ -108,8 +121,8 @@ export default function AnalysisDetail() {
                     <div
                         key={option.option_id}
                         className={`border rounded-xl transition-all duration-300 overflow-hidden ${expandedOption === option.option_id
-                                ? 'bg-white shadow-lg ring-1 ring-emerald-500/20'
-                                : 'bg-white shadow-sm hover:shadow-md'
+                            ? 'bg-white shadow-lg ring-1 ring-emerald-500/20'
+                            : 'bg-white shadow-sm hover:shadow-md'
                             }`}
                     >
                         {/* Option Header Card */}
@@ -272,9 +285,20 @@ export default function AnalysisDetail() {
             <div className="mt-12 text-center">
                 <p className="text-gray-500 mb-4">اطلاعات پرونده تغییر کرده؟</p>
                 <div className="flex justify-center gap-4">
-                    <button className="text-emerald-600 hover:underline">افزودن رویداد جدید</button>
+                    <button
+                        onClick={() => navigate(`/cases/${id}`)}
+                        className="text-emerald-600 hover:underline"
+                    >
+                        افزودن رویداد جدید
+                    </button>
                     <span className="text-gray-300">|</span>
-                    <button className="text-emerald-600 hover:underline">تحلیل مجدد</button>
+                    <button
+                        onClick={() => retryMutation.mutate()}
+                        disabled={retryMutation.isPending}
+                        className="text-emerald-600 hover:underline disabled:opacity-50"
+                    >
+                        {retryMutation.isPending ? 'در حال ارسال...' : 'تحلیل مجدد'}
+                    </button>
                 </div>
             </div>
         </div>

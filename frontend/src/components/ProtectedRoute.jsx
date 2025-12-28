@@ -1,28 +1,11 @@
 import { Navigate, Outlet } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
-import api from '../api';
+import { useAuth } from '../contexts/AuthContext';
 
 export default function ProtectedRoute() {
-    const token = localStorage.getItem('access_token');
-
-    // If no token at all, redirect immediately
-    if (!token) {
-        return <Navigate to="/login" replace />;
-    }
-
-    // Validate token by fetching current user
-    const { isLoading, isError } = useQuery({
-        queryKey: ['currentUser'],
-        queryFn: async () => {
-            const res = await api.get('/users/me/');
-            return res.data;
-        },
-        retry: false, // Don't retry on 401
-        staleTime: 5 * 60 * 1000, // Cache for 5 minutes
-    });
+    const { isAuthenticated, isAuthReady } = useAuth();
 
     // Show loading state while validating
-    if (isLoading) {
+    if (!isAuthReady) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-slate-50">
                 <div className="text-center">
@@ -33,10 +16,8 @@ export default function ProtectedRoute() {
         );
     }
 
-    // If token is invalid/expired, clear it and redirect
-    if (isError) {
-        localStorage.removeItem('access_token');
-        localStorage.removeItem('refresh_token');
+    // If no user, redirect
+    if (!isAuthenticated) {
         return <Navigate to="/login" replace />;
     }
 

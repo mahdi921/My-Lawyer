@@ -1,7 +1,11 @@
 import { Link } from 'react-router-dom';
-import { Scale, FileText, CheckCircle, Shield, ArrowLeft, Activity } from 'lucide-react';
+import { Scale, FileText, CheckCircle, Shield, ArrowLeft, Activity, LayoutDashboard, User } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
+import ProfileMenu from '../components/ProfileMenu';
 
 export default function LandingPage() {
+    const { isAuthenticated, isAuthReady } = useAuth();
+
     return (
         <div className="min-h-screen bg-gray-50 font-sans" dir="rtl">
             {/* Navbar */}
@@ -13,8 +17,22 @@ export default function LandingPage() {
                             <span className="text-xl font-bold text-slate-800">وکیل مجازی</span>
                         </div>
                         <div className="flex items-center space-x-4 space-x-reverse">
-                            <Link to="/login" className="text-gray-600 hover:text-emerald-600 font-medium px-3 py-2">ورود</Link>
-                            <Link to="/register" className="bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition font-medium">ثبت‌نام احتمالی</Link>
+                            {!isAuthReady ? (
+                                <div className="h-10 w-24 bg-slate-100 rounded-lg animate-pulse" />
+                            ) : isAuthenticated ? (
+                                <div className="flex items-center gap-4">
+                                    <Link to="/dashboard" className="hidden md:flex items-center gap-2 text-slate-600 hover:text-emerald-600 font-medium transition">
+                                        <LayoutDashboard className="h-5 w-5" />
+                                        <span>داشبورد</span>
+                                    </Link>
+                                    <ProfileMenu />
+                                </div>
+                            ) : (
+                                <>
+                                    <Link to="/login" className="text-gray-600 hover:text-emerald-600 font-medium px-3 py-2">ورود</Link>
+                                    <Link to="/register" className="bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition font-medium">ثبت نام</Link>
+                                </>
+                            )}
                         </div>
                     </div>
                 </div>

@@ -21,3 +21,4 @@ python-magic>=0.4.27
 # Real-time (WebSocket/SSE)
 channels>=4.0.0
 channels-redis>=4.2.0
+django-redis>=5.3.0

@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { AuthProvider } from './contexts/AuthContext';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
@@ -20,35 +21,37 @@ const queryClient = new QueryClient();
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <Router>
-        <Routes>
-          {/* Public Routes - Redirect to dashboard if logged in */}
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/login" element={<AuthRedirect><Login /></AuthRedirect>} />
-          <Route path="/register" element={<AuthRedirect><Register /></AuthRedirect>} />
+      <AuthProvider>
+        <Router>
+          <Routes>
+            {/* Public Routes - Redirect to dashboard if logged in */}
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/login" element={<AuthRedirect><Login /></AuthRedirect>} />
+            <Route path="/register" element={<AuthRedirect><Register /></AuthRedirect>} />
 
-          {/* Protected Routes */}
-          <Route element={<ProtectedRoute />}>
-            <Route path="/" element={<Layout />}>
-              <Route path="dashboard" element={<Dashboard />} />
-              <Route path="cases" element={<CasesList />} />
-              <Route path="cases/new" element={<NewCase />} />
-              <Route path="cases/:id" element={<CaseResult />} />
-              <Route path="cases/:id/edit" element={<EditCase />} />
-              <Route path="cases/:id/analysis/:analysisId" element={<AnalysisDetail />} />
+            {/* Protected Routes */}
+            <Route element={<ProtectedRoute />}>
+              <Route path="/" element={<Layout />}>
+                <Route path="dashboard" element={<Dashboard />} />
+                <Route path="cases" element={<CasesList />} />
+                <Route path="cases/new" element={<NewCase />} />
+                <Route path="cases/:id" element={<CaseResult />} />
+                <Route path="cases/:id/edit" element={<EditCase />} />
+                <Route path="cases/:id/analysis/:analysisId" element={<AnalysisDetail />} />
 
-              {/* Settings */}
-              <Route path="settings" element={<ProfileSettings />} />
+                {/* Settings */}
+                <Route path="settings" element={<ProfileSettings />} />
 
-              {/* Analysis */}
-              <Route path="analysis" element={<AnalysisList />} />
+                {/* Analysis */}
+                <Route path="analysis" element={<AnalysisList />} />
+              </Route>
             </Route>
-          </Route>
 
-          {/* Fallback */}
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </Router>
+            {/* Fallback */}
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </Router>
+      </AuthProvider>
     </QueryClientProvider>
   );
 }

@@ -1,19 +1,21 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../api';
+import { useAuth } from '../contexts/AuthContext';
 
 export default function Login() {
     const [phone, setPhone] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const navigate = useNavigate();
+    const { login } = useAuth();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
             const res = await api.post('/auth/login/', { phone_number: phone, password });
-            localStorage.setItem('access_token', res.data.access);
-            localStorage.setItem('refresh_token', res.data.refresh);
+            // Use AuthContext's login to properly update state
+            login(res.data.access, res.data.refresh);
             navigate('/dashboard');
         } catch (err) {
             setError('شماره موبایل یا رمز عبور اشتباه است.');
